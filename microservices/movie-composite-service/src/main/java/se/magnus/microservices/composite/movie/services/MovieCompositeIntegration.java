@@ -1,6 +1,8 @@
 package se.magnus.microservices.composite.movie.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -27,6 +29,8 @@ import static org.springframework.http.HttpMethod.GET;
 
 @Component
 public class MovieCompositeIntegration implements MovieService, CommentService, RatingService, ScreeningService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MovieCompositeIntegration.class);
 
     private final String movieServiceUrl;
     private final String commentServiceUrl;
@@ -65,10 +69,10 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
 
         try {
             String url = movieServiceUrl + movieId;
-            //LOG.debug("Will call getProduct API on URL: {}", url);
+            LOG.debug("Will call getMovie API on URL: {}", url);
 
             Movie movie = restTemplate.getForObject(url, Movie.class);
-            //LOG.debug("Found a product with id: {}", product.getProductId());
+            LOG.debug("Found a movie with id: {}", movie.getMovieId());
 
             return movie;
 
@@ -83,8 +87,8 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
                     throw new InvalidInputException(getErrorMessage(ex));
 
                 default:
-                    //LOG.warn("Got a unexpected HTTP error: {}, will rethrow it", ex.getStatusCode());
-                    //LOG.warn("Error body: {}", ex.getResponseBodyAsString());
+                    LOG.warn("Got a unexpected HTTP error: {}, will rethrow it", ex.getStatusCode());
+                    LOG.warn("Error body: {}", ex.getResponseBodyAsString());
                     throw ex;
             }
         }
@@ -103,15 +107,15 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
         try {
             String url = commentServiceUrl + movieId;
 
-//            LOG.debug("Will call getRecommendations API on URL: {}", url);
+            LOG.debug("Will call getRecommendations API on URL: {}", url);
             List<Comment> comments = restTemplate.exchange(url, GET, null,
                     new ParameterizedTypeReference<List<Comment>>() {}).getBody();
 
-//            LOG.debug("Found {} recommendations for a product with id: {}", recommendations.size(), productId);
+            LOG.debug("Found {} recommendations for a product with id: {}", comments.size(), movieId);
             return comments;
 
         } catch (Exception ex) {
-//            LOG.warn("Got an exception while requesting recommendations, return zero recommendations: {}", ex.getMessage());
+            LOG.warn("Got an exception while requesting recommendations, return zero recommendations: {}", ex.getMessage());
             return new ArrayList<>();
         }
     }
