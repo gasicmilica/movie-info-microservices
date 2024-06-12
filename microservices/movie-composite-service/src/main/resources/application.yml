@@ -19,3 +19,22 @@ logging:
   level:
     root: INFO
     se.magnus: DEBUG
+
+---
+spring.profiles: docker
+
+server.port: 8080
+
+app:
+  movie-service:
+    host: movie
+    port: 8080
+  rating-service:
+    host: rating
+    port: 8080
+  comment-service:
+    host: comment
+    port: 8080
+  screening-service:
+    host: screening
+    port: 8080
