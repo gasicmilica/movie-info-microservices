@@ -8,6 +8,12 @@ public class RatingSummary {
     private final Date ratingDate;
     private final int ratingNumber;
 
+    public RatingSummary() {
+        this.ratingId = 0;
+        this.author = null;
+        this.ratingDate = new Date();
+        this.ratingNumber = 0;
+    }
 
     public RatingSummary(int ratingId, String author, Date ratingDate, int ratingNumber) {
         this.ratingId = ratingId;

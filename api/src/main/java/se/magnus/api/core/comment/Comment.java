@@ -5,20 +5,20 @@ import se.magnus.api.composite.movie.ServiceAddresses;
 import java.util.Date;
 
 public class Comment {
-    private final int movieId;
-    private final int commentId;
-    private final String author;
-    private final Date commentDate;
-    private final String commentText;
-    private final String serviceAddress;
+    private int movieId;
+    private int commentId;
+    private String author;
+    private Date commentDate;
+    private String commentText;
+    private String serviceAddress;
 
 
     public Comment() {
-        this.movieId = 1;
-        this.commentId = 1;
-        this.author = "Author";
+        this.movieId = 0;
+        this.commentId = 0;
+        this.author = "";
         this.commentDate = new Date();
-        this.commentText = "commentText";
+        this.commentText = "";
         this.serviceAddress = null;
     }
 
@@ -53,5 +53,29 @@ public class Comment {
 
     public String getServiceAddress() {
         return serviceAddress;
+    }
+
+    public void setServiceAddress(String address) {
+        this.serviceAddress = address;
+    }
+
+    public void setMovieId(int movieId) {
+        this.movieId = movieId;
+    }
+
+    public void setCommentId(int commentId) {
+        this.commentId = commentId;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setCommentDate(Date commentDate) {
+        this.commentDate = commentDate;
+    }
+
+    public void setCommentText(String commentText) {
+        this.commentText = commentText;
     }
 }

@@ -7,6 +7,14 @@ public class ServiceAddresses {
     private final String ratingAddress;
     private final String screeningAddress;
 
+    public ServiceAddresses() {
+        this.compositeAddress = null;
+        this.movieAddress = null;
+        this.commentAddress = null;
+        this.ratingAddress = null;
+        this.screeningAddress = null;
+    }
+
     public ServiceAddresses(String compositeAddressString, String movieAddress, String commentAddress, String ratingAddress, String screeningAddress) {
         this.compositeAddress = compositeAddressString;
         this.movieAddress = movieAddress;

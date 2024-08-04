@@ -5,21 +5,21 @@ import se.magnus.api.composite.movie.ServiceAddresses;
 import java.util.Date;
 
 public class Screening {
-    private final int movieId;
-    private final int screeningId;
-    private final String cinemaName;
-    private final Date screeningDate;
-    private final double price;
-    private final String location;
-    private final String serviceAddress;
+    private int movieId;
+    private int screeningId;
+    private String cinemaName;
+    private Date screeningDate;
+    private double price;
+    private String location;
+    private String serviceAddress;
 
 
     public Screening() {
-        this.movieId = 1;
-        this.screeningId = 1;
+        this.movieId = 0;
+        this.screeningId = 0;
         this.cinemaName = null;
         this.screeningDate = null;
-        this.price = 2400;
+        this.price =0;
         this.location = null;
         this.serviceAddress = null;
     }
@@ -60,5 +60,33 @@ public class Screening {
 
     public String getServiceAddress() {
         return serviceAddress;
+    }
+
+    public void setServiceAddress(String address) {
+        this.serviceAddress = address;
+    }
+
+    public void setMovieId(int movieId) {
+        this.movieId = movieId;
+    }
+
+    public void setScreeningId(int screeningId) {
+        this.screeningId = screeningId;
+    }
+
+    public void setCinemaName(String cinemaName) {
+        this.cinemaName = cinemaName;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setScreeningDate(Date screeningDate) {
+        this.screeningDate = screeningDate;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

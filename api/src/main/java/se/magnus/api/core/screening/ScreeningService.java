@@ -1,7 +1,6 @@
 package se.magnus.api.core.screening;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -10,4 +9,13 @@ public interface ScreeningService {
             value = "/screening",
             produces = "application/json")
     List<Screening> getScreenings(@RequestParam(value = "movieId") int movieId);
+
+    @PostMapping(
+            value    = "/screening",
+            consumes = "application/json",
+            produces = "application/json")
+    Screening createScreening(@RequestBody Screening body);
+
+    @DeleteMapping(value = "/screening")
+    void deleteScreenings(@RequestParam(value = "movieId", required = true)  int movieId);
 }

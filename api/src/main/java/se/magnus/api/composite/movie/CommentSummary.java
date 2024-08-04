@@ -8,6 +8,12 @@ public class CommentSummary {
     private final Date commentDate;
     private final String commentText;
 
+    public CommentSummary() {
+        this.commentId = 0;
+        this.author = null;
+        this.commentDate = new Date();
+        this.commentText = null;
+    }
 
     public CommentSummary(int commentId, String author, Date commentDate, String commentText) {
         this.commentId = commentId;

@@ -1,33 +1,51 @@
-package se.magnus.api.core.movie;
+package se.magnus.microservices.core.movie.persistence;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-public class Movie {
+import static java.lang.String.format;
+
+@Document(collection = "movies")
+public class MovieEntity {
+    @Id
+    private String id;
+
+    @Version
+    private Integer version;
+
+    @Indexed(name = "movieId", unique = true)
     private int movieId;
+
     private String title;
     private String director;
     private int releaseYear;
     private int duration;
     private String genre;
-    private String serviceAddress;
 
-    public Movie() {
-        movieId = 0;
-        title = "";
-        director = null;
-        this.releaseYear = 0;
-        this.duration = 0;
-        this.genre = null;
-        this.serviceAddress = null;
-    }
+    public MovieEntity() {}
 
-    public Movie(int movieId, String title, String director, int releaseYear, int duration, String genre, String serviceAddress) {
+    public MovieEntity(int movieId, String title, String director, int releaseYear, int duration, String genre) {
         this.movieId = movieId;
         this.title = title;
         this.director = director;
         this.releaseYear = releaseYear;
         this.duration = duration;
         this.genre = genre;
-        this.serviceAddress = serviceAddress;
+    }
+
+    @Override
+    public String toString() {
+        return format("MovieEntity: %s", movieId);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public Integer getVersion() {
+        return version;
     }
 
     public int getMovieId() {
@@ -36,6 +54,10 @@ public class Movie {
 
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDirector() {
@@ -54,20 +76,8 @@ public class Movie {
         return genre;
     }
 
-    public String getServiceAddress() {
-        return serviceAddress;
-    }
-
-    public void setServiceAddress(String address) {
-        this.serviceAddress = address;
-    }
-
     public void setMovieId(int movieId) {
         this.movieId = movieId;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public void setDirector(String director) {
@@ -84,5 +94,13 @@ public class Movie {
 
     public void setGenre(String genre) {
         this.genre = genre;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

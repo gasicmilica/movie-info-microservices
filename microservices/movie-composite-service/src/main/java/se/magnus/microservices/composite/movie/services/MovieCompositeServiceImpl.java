@@ -1,5 +1,7 @@
 package se.magnus.microservices.composite.movie.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestController;
 import se.magnus.api.composite.movie.*;
 import se.magnus.api.core.comment.Comment;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 public class MovieCompositeServiceImpl implements MovieCompositeService {
     private final ServiceUtil serviceUtil;
     private  MovieCompositeIntegration integration;
+    private static final Logger LOG = LoggerFactory.getLogger(MovieCompositeServiceImpl.class);
+
 
     public MovieCompositeServiceImpl(ServiceUtil serviceUtil, MovieCompositeIntegration integration) {
         this.serviceUtil = serviceUtil;
@@ -25,13 +29,66 @@ public class MovieCompositeServiceImpl implements MovieCompositeService {
     @Override
     public MovieAggregate getMovie(int movieId) {
         Movie movie = integration.getMovie(movieId);
-        if (movie == null) throw new NotFoundException("No movie found for movie id: " + movieId);
+        if (movie == null) throw new NotFoundException("No movie found for movie id: movie je null" + movieId);
 
         List<Comment> comments = integration.getComments(movieId);
         List<Screening> screenings = integration.getScreenings(movieId);
         List<Rating> ratings = integration.getRatings(movieId);
 
         return createMovieAggregate(movie, serviceUtil.getServiceAddress(), comments, screenings, ratings);
+    }
+
+    @Override
+    public void createCompositeMovie(MovieAggregate body) {
+        try {
+
+            LOG.debug("createCompositeMovie: creates a new composite entity for movieId: {}", body.getMovieId());
+
+            Movie movie = new Movie(body.getMovieId(), body.getTitle(), body.getDirector(), body.getReleaseYear(), body.getDuration(), body.getGenre(), null);
+            integration.createMovie(movie);
+
+            if (body.getRatings() != null) {
+                body.getRatings().forEach(r -> {
+                    Rating rating = new Rating(body.getMovieId(), r.getRatingId(), r.getAuthor(), r.getRatingDate(), r.getRatingNumber(), null);
+                    integration.createRating(rating);
+                });
+            }
+
+            if (body.getComments() != null) {
+                body.getComments().forEach(r -> {
+                    Comment comment = new Comment(body.getMovieId(), r.getCommentId(), r.getAuthor(), r.getCommentDate(), r.getCommentText(), null);
+                    integration.createComment(comment);
+                });
+            }
+
+            if (body.getScreenings() != null) {
+                body.getScreenings().forEach(r -> {
+                    Screening screening = new Screening(body.getMovieId(), r.getScreeningId(), r.getCinemaName(), r.getScreeningDate(), r.getPrice(), r.getLocation(),  null);
+                    integration.createScreening(screening);
+                });
+            }
+
+            LOG.debug("createCompositeMovie: composite entites created for movieId: {}", body.getMovieId());
+
+        } catch (RuntimeException re) {
+            LOG.warn("createCompositeProduct failed", re);
+            throw re;
+        }
+    }
+
+    @Override
+    public void deleteCompositeMovie(int movieId) {
+        LOG.debug("deleteCompositeMovie: Deletes a movie aggregate for movieId: {}", movieId);
+
+        integration.deleteMovie(movieId);
+
+        integration.deleteComments(movieId);
+
+        integration.deleteRatings(movieId);
+
+        integration.deleteScreenings(movieId);
+
+        LOG.debug("getCompositeMovie: aggregate entities deleted for movieId: {}", movieId);
     }
 
     private MovieAggregate createMovieAggregate(Movie movie, String serviceAddress, List<Comment> comments, List<Screening> screenings, List<Rating> ratings) {

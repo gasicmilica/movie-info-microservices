@@ -15,6 +15,19 @@ public class MovieAggregate {
     private final List<ScreeningSummary> screenings;
 
 
+    public MovieAggregate() {
+        this.movieId = 0;
+        this.title = null;
+        this.director = null;
+        this.releaseYear = 0;
+        this.duration = 0;
+        this.genre = null;
+        this.serviceAddresses = null;
+        this.comments = null;
+        this.ratings = null;
+        this.screenings = null;
+    }
+
     public MovieAggregate(int movieId, String title, String director, int releaseYear, int duration, String genre, ServiceAddresses serviceAddresses, List<CommentSummary> comments, List<RatingSummary> ratings, List<ScreeningSummary> screenings) {
         this.movieId = movieId;
         this.title = title;

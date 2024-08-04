@@ -40,10 +40,12 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     private final RestTemplate restTemplate;
     private final ObjectMapper mapper;
 
+
     @Autowired
     public MovieCompositeIntegration(
             RestTemplate restTemplate,
             ObjectMapper mapper,
+
             @Value("${app.movie-service.host}") String movieServiceHost,
             @Value("${app.movie-service.port}") int movieServicePort,
 
@@ -59,38 +61,190 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
 
         this.restTemplate = restTemplate;
         this.mapper = mapper;
-        this.movieServiceUrl = "http://" + movieServiceHost + ":" + movieServicePort + "/movie/";
-        this.screeningServiceUrl = "http://" + screeningServiceHost + ":" + screeningServicePort + "/screening?movieId=";
-        this.commentServiceUrl = "http://" + commentServiceHost + ":" + commentServicePort + "/comment?movieId=";
-        this.ratingServiceUrl = "http://" + ratingServiceHost + ":" + ratingServicePort + "/rating?movieId=";
+
+        this.movieServiceUrl = "http://" + movieServiceHost + ":" + movieServicePort + "/movie";
+        this.screeningServiceUrl = "http://" + screeningServiceHost + ":" + screeningServicePort + "/screening";
+        this.commentServiceUrl = "http://" + commentServiceHost + ":" + commentServicePort + "/comment";
+        this.ratingServiceUrl = "http://" + ratingServiceHost + ":" + ratingServicePort + "/rating";
     }
 
     public Movie getMovie(int movieId) {
-
         try {
-            String url = movieServiceUrl + movieId;
-            LOG.debug("Will call getMovie API on URL: {}", url);
+            String url = movieServiceUrl + "/" + movieId;
+            LOG.debug("Will call the getMovie API on URL: {}", url);
 
-            Movie movie = restTemplate.getForObject(url, Movie.class);
-            LOG.debug("Found a movie with id: {}", movie.getMovieId());
+            Movie product = restTemplate.getForObject(url, Movie.class);
+            LOG.debug("Found a product with id: {}", product.getMovieId());
+
+            return product;
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
+
+    @Override
+    public Movie createMovie(Movie body) {
+        try {
+            String url = movieServiceUrl;
+            LOG.debug("Will post a new movie to URL: {}", url);
+
+            Movie movie = restTemplate.postForObject(url, body, Movie.class);
+            LOG.debug("Created a movie with id: {}", movie.getMovieId());
 
             return movie;
 
         } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
 
-            switch (ex.getStatusCode()) {
+    @Override
+    public void deleteMovie(int movieId) {
+        try {
+            String url = movieServiceUrl + "/" + movieId;
+            LOG.debug("Will call the deleteMovie API on URL: {}", url);
 
-                case NOT_FOUND:
-                    throw new NotFoundException(getErrorMessage(ex));
+            restTemplate.delete(url);
 
-                case UNPROCESSABLE_ENTITY :
-                    throw new InvalidInputException(getErrorMessage(ex));
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
 
-                default:
-                    LOG.warn("Got a unexpected HTTP error: {}, will rethrow it", ex.getStatusCode());
-                    LOG.warn("Error body: {}", ex.getResponseBodyAsString());
-                    throw ex;
-            }
+    public List<Comment> getComments(int movieId) {
+
+        try {
+            String url = commentServiceUrl + "?movieId=" + movieId;
+
+            LOG.debug("Will call getComments API on URL: {}", url);
+            List<Comment> comments = restTemplate.exchange(url, GET, null,
+                    new ParameterizedTypeReference<List<Comment>>() {}).getBody();
+
+            LOG.debug("Found {} comment for a movie with id: {}", comments.size(), movieId);
+            return comments;
+
+        } catch (Exception ex) {
+            LOG.warn("Got an exception while requesting recommendations, return zero recommendations: {}", ex.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Comment createComment(Comment body) {
+        try {
+            String url = commentServiceUrl;
+            LOG.debug("Will post a new comment to URL: {}", url);
+
+            Comment recommendation = restTemplate.postForObject(url, body, Comment.class);
+            LOG.debug("Created a comment with id: {}", recommendation.getMovieId());
+
+            return recommendation;
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
+
+    @Override
+    public void deleteComments(int movieId) {
+        try {
+            String url = commentServiceUrl + "?movieId=" + movieId;
+            LOG.debug("Will call the deleteComments API on URL: {}", url);
+
+            restTemplate.delete(url);
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
+
+    public List<Rating> getRatings(int movieId) {
+        try {
+            String url = ratingServiceUrl + "?movieId=" + movieId;;
+
+            LOG.debug("Will call getRatings API on URL: {}", url);
+            List<Rating> ratings = restTemplate.exchange(url, GET, null,
+                    new ParameterizedTypeReference<List<Rating>>() {}).getBody();
+
+            LOG.debug("Found {} rating for a movie with id: {}", ratings.size(), movieId);
+            return ratings;
+
+        } catch (Exception ex) {
+            LOG.warn("Got an exception while requesting ratings, return zero ratings: {}", ex.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Rating createRating(Rating body) {
+        try {
+            String url = ratingServiceUrl;
+            LOG.debug("Will post a new rating to URL: {}", url);
+
+            Rating rating = restTemplate.postForObject(url, body, Rating.class);
+            LOG.debug("Created a rating with id: {}", rating.getMovieId());
+
+            return rating;
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
+
+    @Override
+    public void deleteRatings(int movieId) {
+        try {
+            String url = ratingServiceUrl + "?movieId=" + movieId;
+            LOG.debug("Will call the deleteRatings API on URL: {}", url);
+
+            restTemplate.delete(url);
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
+
+    public List<Screening> getScreenings(int movieId) {
+
+        try {
+            String url = screeningServiceUrl + "?movieId=" + movieId;
+
+            List<Screening> screenings = restTemplate.exchange(url, GET, null,
+                    new ParameterizedTypeReference<List<Screening>>() {}).getBody();
+            return screenings;
+
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
+    public Screening createScreening(Screening body) {
+        try {
+            String url = screeningServiceUrl;
+            LOG.debug("Will post a new screening to URL: {}", url);
+
+            Screening screening = restTemplate.postForObject(url, body, Screening.class);
+            LOG.debug("Created a screening with id: {}", screening.getMovieId());
+
+            return screening;
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
+        }
+    }
+
+    @Override
+    public void deleteScreenings(int movieId) {
+        try {
+            String url = screeningServiceUrl + "?movieId=" + movieId;
+            LOG.debug("Will call the deleteScreenings API on URL: {}", url);
+
+            restTemplate.delete(url);
+
+        } catch (HttpClientErrorException ex) {
+            throw handleHttpClientException(ex);
         }
     }
 
@@ -102,49 +256,19 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
         }
     }
 
-    public List<Comment> getComments(int movieId) {
+    private RuntimeException handleHttpClientException(HttpClientErrorException ex) {
+        switch (ex.getStatusCode()) {
 
-        try {
-            String url = commentServiceUrl + movieId;
+            case NOT_FOUND:
+                return new NotFoundException(getErrorMessage(ex));
 
-            LOG.debug("Will call getRecommendations API on URL: {}", url);
-            List<Comment> comments = restTemplate.exchange(url, GET, null,
-                    new ParameterizedTypeReference<List<Comment>>() {}).getBody();
+            case UNPROCESSABLE_ENTITY :
+                return new InvalidInputException(getErrorMessage(ex));
 
-            LOG.debug("Found {} recommendations for a product with id: {}", comments.size(), movieId);
-            return comments;
-
-        } catch (Exception ex) {
-            LOG.warn("Got an exception while requesting recommendations, return zero recommendations: {}", ex.getMessage());
-            return new ArrayList<>();
-        }
-    }
-
-    public List<Rating> getRatings(int movieId) {
-
-        try {
-            String url = ratingServiceUrl + movieId;
-
-            List<Rating> ratings = restTemplate.exchange(url, GET, null,
-                    new ParameterizedTypeReference<List<Rating>>() {}).getBody();
-            return ratings;
-
-        } catch (Exception ex) {
-            return new ArrayList<>();
-        }
-    }
-
-    public List<Screening> getScreenings(int movieId) {
-
-        try {
-            String url = screeningServiceUrl + movieId;
-
-            List<Screening> screenings = restTemplate.exchange(url, GET, null,
-                    new ParameterizedTypeReference<List<Screening>>() {}).getBody();
-            return screenings;
-
-        } catch (Exception ex) {
-            return new ArrayList<>();
+            default:
+                LOG.warn("Got a unexpected HTTP error: {}, will rethrow it", ex.getStatusCode());
+                LOG.warn("Error body: {}", ex.getResponseBodyAsString());
+                return ex;
         }
     }
 }

@@ -1,25 +1,22 @@
 package se.magnus.api.core.rating;
 
-import se.magnus.api.composite.movie.ServiceAddresses;
-import se.magnus.api.core.screening.Screening;
-
 import java.util.Date;
 
 public class Rating {
-    private final int movieId;
-    private final int ratingId;
-    private final String author;
-    private final Date ratingDate;
-    private final int ratingNumber;
-    private final String serviceAddress;
+    private int movieId;
+    private int ratingId;
+    private String author;
+    private Date ratingDate;
+    private int ratingNumber;
+    private String serviceAddress;
 
 
     public Rating() {
-        this.movieId = 1;
-        this.ratingId = 1;
-        this.author = "author";
+        this.movieId = 0;
+        this.ratingId = 0;
+        this.author = "";
         this.ratingDate = null;
-        this.ratingNumber = 5;
+        this.ratingNumber = 0;
         this.serviceAddress = null;
     }
 
@@ -54,5 +51,29 @@ public class Rating {
 
     public String getServiceAddress() {
         return serviceAddress;
+    }
+
+    public void setServiceAddress(String address) {
+        this.serviceAddress = address;
+    }
+
+    public void setRatingId(int ratingId) {
+        this.ratingId = ratingId;
+    }
+
+    public void setMovieId(int movieId) {
+        this.movieId = movieId;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setRatingDate(Date ratingDate) {
+        this.ratingDate = ratingDate;
+    }
+
+    public void setRatingNumber(int ratingNumber) {
+        this.ratingNumber = ratingNumber;
     }
 }

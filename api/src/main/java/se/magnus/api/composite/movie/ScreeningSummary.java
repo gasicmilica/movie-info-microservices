@@ -10,6 +10,14 @@ public class ScreeningSummary {
     private final String location;
 
 
+    public ScreeningSummary() {
+        this.screeningId = 0;
+        this.cinemaName = null;
+        this.screeningDate = new Date();
+        this.price = 0;
+        this.location = null;
+    }
+
     public ScreeningSummary(int screeningId, String cinemaName, Date screeningDate, double price, String location) {
         this.screeningId = screeningId;
         this.cinemaName = cinemaName;
