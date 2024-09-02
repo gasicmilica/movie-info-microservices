@@ -1,15 +1,15 @@
 package se.magnus.api.core.rating;
 
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
 
 
 public interface RatingService {
     @GetMapping(
             value = "/rating",
             produces = "application/json")
-    List<Rating> getRatings(@RequestParam(value = "movieId") int movieId);
+    Flux<Rating> getRatings(@RequestParam(value = "movieId") int movieId);
 
     @PostMapping(
             value    = "/rating",

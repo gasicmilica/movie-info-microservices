@@ -14,6 +14,8 @@ import se.magnus.util.exceptions.InvalidInputException;
 import se.magnus.util.exceptions.NotFoundException;
 import se.magnus.util.http.ServiceUtil;
 
+import static reactor.core.publisher.Mono.error;
+
 
 @RestController
 public class MovieServiceImpl implements MovieService {
@@ -31,37 +33,39 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public Movie getMovie(int movieId) {
+    public Mono<Movie> getMovie(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
 
-        MovieEntity entity = repository.findByMovieId(movieId)
-                .orElseThrow(() -> new NotFoundException("No movie found for movieId: nije uspeo repo" + movieId));
-
-        Movie response = mapper.entityToApi(entity);
-        response.setServiceAddress(serviceUtil.getServiceAddress());
-
-        LOG.debug("getProduct: found movieId: {}", response.getMovieId());
-
-        return response;
+        return repository.findByMovieId(movieId)
+                .switchIfEmpty(error(new NotFoundException("No product found for movieId: " + movieId)))
+                .log()
+                .map(e -> mapper.entityToApi(e))
+                .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
     }
 
     @Override
     public Movie createMovie(Movie body) {
-        try {
-            MovieEntity entity = mapper.apiToEntity(body);
-            MovieEntity newEntity = repository.save(entity);
 
-            LOG.debug("createMovie: entity created for movieId: {}", body.getMovieId());
-            return mapper.entityToApi(newEntity);
+        if (body.getMovieId() < 1) throw new InvalidInputException("Invalid movieId: " + body.getMovieId());
 
-        } catch (DuplicateKeyException dke) {
-            throw new InvalidInputException("Duplicate key, Movie Id: " + body.getMovieId());
-        }
+        MovieEntity entity = mapper.apiToEntity(body);
+        Mono<Movie> newEntity = repository.save(entity)
+                .log()
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Movie Id: " + body.getMovieId()))
+                .map(mapper::entityToApi);
+
+        LOG.debug("createMovie: entity created for movieId: {}", body.getMovieId());
+
+        return newEntity.block();
     }
 
     @Override
     public void deleteMovie(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
-        repository.findByMovieId(movieId).ifPresent(e -> repository.delete(e));
+
+        LOG.debug("deleteMovie: tries to delete an entity with movieId: {}", movieId);
+        repository.findByMovieId(movieId).log().map(e -> repository.delete(e)).flatMap(e -> e).block();
     }
 }

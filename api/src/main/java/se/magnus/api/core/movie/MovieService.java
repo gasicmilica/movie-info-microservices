@@ -1,13 +1,14 @@
 package se.magnus.api.core.movie;
 
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 public interface MovieService {
 
     @GetMapping(
             value = "/movie/{movieId}",
             produces = "application/json")
-    Movie getMovie(@PathVariable int movieId);
+    Mono<Movie> getMovie(@PathVariable int movieId);
 
     @PostMapping(
             value    = "/movie",

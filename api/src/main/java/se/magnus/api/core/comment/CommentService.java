@@ -1,15 +1,15 @@
 package se.magnus.api.core.comment;
 
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
 
 public interface CommentService {
 
     @GetMapping(
             value = "/comment",
             produces = "application/json")
-    List<Comment> getComments(@RequestParam(value = "movieId") int movieId);
+    Flux<Comment> getComments(@RequestParam(value = "movieId") int movieId);
 
     @PostMapping(
             value    = "/comment",

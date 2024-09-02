@@ -1,7 +1,5 @@
 package se.magnus.api.core.screening;
 
-import se.magnus.api.composite.movie.ServiceAddresses;
-
 import java.util.Date;
 
 public class Screening {

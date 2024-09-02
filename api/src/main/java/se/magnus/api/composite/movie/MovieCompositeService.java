@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 
 @Api(description = "REST API for composite movie information.")
@@ -21,7 +22,7 @@ public interface MovieCompositeService {
     @GetMapping(
             value    = "/movie-composite/{movieId}",
             produces = "application/json")
-    MovieAggregate getMovie(@PathVariable int movieId);
+    Mono<MovieAggregate> getMovie(@PathVariable int movieId);
 
 
     @ApiOperation(

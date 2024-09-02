@@ -1,14 +1,14 @@
 package se.magnus.api.core.screening;
 
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
 
 public interface ScreeningService {
     @GetMapping(
             value = "/screening",
             produces = "application/json")
-    List<Screening> getScreenings(@RequestParam(value = "movieId") int movieId);
+    Flux<Screening> getScreenings(@RequestParam(value = "movieId") int movieId);
 
     @PostMapping(
             value    = "/screening",

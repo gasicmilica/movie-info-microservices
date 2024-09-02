@@ -1,7 +1,6 @@
 package se.magnus.microservices.core.screening.persistence;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

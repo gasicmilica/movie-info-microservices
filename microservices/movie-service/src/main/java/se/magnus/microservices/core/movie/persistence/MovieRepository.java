@@ -1,10 +1,9 @@
 package se.magnus.microservices.core.movie.persistence;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 
-public interface MovieRepository extends CrudRepository<MovieEntity, String> {
-    Optional<MovieEntity> findByMovieId(int movieId);
+public interface MovieRepository extends ReactiveCrudRepository<MovieEntity, String> {
+    Mono<MovieEntity> findByMovieId(int movieId);
 }

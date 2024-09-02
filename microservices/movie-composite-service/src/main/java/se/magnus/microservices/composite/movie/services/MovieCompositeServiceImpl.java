@@ -3,12 +3,12 @@ package se.magnus.microservices.composite.movie.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 import se.magnus.api.composite.movie.*;
 import se.magnus.api.core.comment.Comment;
 import se.magnus.api.core.movie.Movie;
 import se.magnus.api.core.rating.Rating;
 import se.magnus.api.core.screening.Screening;
-import se.magnus.util.exceptions.NotFoundException;
 import se.magnus.util.http.ServiceUtil;
 
 import java.util.List;
@@ -27,15 +27,18 @@ public class MovieCompositeServiceImpl implements MovieCompositeService {
     }
 
     @Override
-    public MovieAggregate getMovie(int movieId) {
-        Movie movie = integration.getMovie(movieId);
-        if (movie == null) throw new NotFoundException("No movie found for movie id: movie je null" + movieId);
+    public Mono<MovieAggregate> getMovie(int movieId) {
 
-        List<Comment> comments = integration.getComments(movieId);
-        List<Screening> screenings = integration.getScreenings(movieId);
-        List<Rating> ratings = integration.getRatings(movieId);
-
-        return createMovieAggregate(movie, serviceUtil.getServiceAddress(), comments, screenings, ratings);
+        return Mono.zip(
+                        values -> createMovieAggregate(
+                                (Movie) values[0], serviceUtil.getServiceAddress(), (List<Comment>) values[1], (List<Screening>) values[2], (List<Rating>) values[3]
+                        ),
+                        integration.getMovie(movieId),
+                        integration.getComments(movieId).collectList(),
+                        integration.getScreenings(movieId).collectList(),
+                        integration.getRatings(movieId).collectList())
+                .doOnError(ex -> LOG.warn("getCompositeMovie failed: {}", ex.toString()))
+                .log();
     }
 
     @Override

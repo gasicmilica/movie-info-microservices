@@ -1,9 +1,9 @@
 package se.magnus.microservices.core.comment.persistence;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
 
-public interface CommentRepository extends CrudRepository<CommentEntity, String> {
-    List<CommentEntity> findByMovieId(int movieId);
+public interface CommentRepository extends ReactiveCrudRepository<CommentEntity, String> {
+    Flux<CommentEntity> findByMovieId(int movieId);
 }

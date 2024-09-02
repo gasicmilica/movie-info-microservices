@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Scheduler;
 import se.magnus.api.core.screening.Screening;
 import se.magnus.api.core.screening.ScreeningService;
 import se.magnus.microservices.core.screening.persistence.ScreeningEntity;
@@ -24,19 +26,27 @@ public class ScreeningServiceImpl implements ScreeningService {
     private static final Logger LOG = LoggerFactory.getLogger(ScreeningServiceImpl.class);
     private final ScreeningRepository repository;
     private final ScreeningMapper mapper;
+    private final Scheduler scheduler;
 
     @Autowired
-    public ScreeningServiceImpl(ServiceUtil serviceUtil, ScreeningRepository repository, ScreeningMapper mapper) {
+    public ScreeningServiceImpl(ServiceUtil serviceUtil, ScreeningRepository repository, ScreeningMapper mapper, Scheduler scheduler) {
         this.serviceUtil = serviceUtil;
         this.repository = repository;
         this.mapper = mapper;
+        this.scheduler = scheduler;
     }
 
 
     @Override
-    public List<Screening> getScreenings(int movieId) {
+    public Flux<Screening> getScreenings(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
 
+        LOG.debug("Will get reviews for product with id={}", movieId);
+
+        return asyncFlux(() -> Flux.fromIterable(getByMovieId(movieId))).log(null, FINE);
+    }
+
+    protected List<Screening> getByMovieId(int movieId) {
         List<ScreeningEntity> entityList = repository.findByMovieId(movieId);
         List<Screening> list = mapper.entityListToApiList(entityList);
         list.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));
@@ -68,5 +78,9 @@ public class ScreeningServiceImpl implements ScreeningService {
 
         LOG.debug("deleteScreenings: tries to delete screenings for the product with movieId: {}", movieId);
         repository.deleteAll(repository.findByMovieId(movieId));
+    }
+
+    private <T> Flux<T> asyncFlux(Supplier<Publisher<T>> publisherSupplier) {
+        return Flux.defer(publisherSupplier).subscribeOn(scheduler);
     }
 }

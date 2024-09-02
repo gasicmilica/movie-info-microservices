@@ -1,6 +1,5 @@
 package se.magnus.api.core.comment;
 
-import se.magnus.api.composite.movie.ServiceAddresses;
 
 import java.util.Date;
 

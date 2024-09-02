@@ -67,11 +67,44 @@ app:
     host: localhost
     port: 7004
 
+spring.cloud.stream:
+  defaultBinder: rabbit
+  default.contentType: application/json
+  bindings:
+    output-movies:
+      destination: movies
+      producer:
+        required-groups: auditGroup
+    output-comments:
+      destination: comments
+      producer:
+        required-groups: auditGroup
+    output-ratings:
+      destination: ratings
+      producer:
+        required-groups: auditGroup
+    output-screenings:
+      destination: screenings
+      producer:
+        required-groups: auditGroup
+
+spring.cloud.stream.kafka.binder:
+  brokers: 127.0.0.1
+  defaultBrokerPort: 9092
+
+spring.rabbitmq:
+  host: 127.0.0.1
+  port: 5672
+  username: guest
+  password: guest
+
 logging:
   level:
     root: INFO
     se.magnus: DEBUG
 
+management.endpoint.health.show-details: "ALWAYS"
+management.endpoints.web.exposure.include: "*"
 ---
 spring.profiles: docker
 
@@ -90,3 +123,7 @@ app:
   screening-service:
     host: screening
     port: 8080
+
+spring.rabbitmq.host: rabbitmq
+
+spring.cloud.stream.kafka.binder.brokers: kafka

@@ -1,9 +1,9 @@
 package se.magnus.microservices.core.rating.persistence;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
 
-public interface RatingRepository extends CrudRepository<RatingEntity, String> {
-    List<RatingEntity> findByMovieId(int movieId);
+public interface RatingRepository extends ReactiveCrudRepository<RatingEntity, String> {
+    Flux<RatingEntity> findByMovieId(int movieId);
 }

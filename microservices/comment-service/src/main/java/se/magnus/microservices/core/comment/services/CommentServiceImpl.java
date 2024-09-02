@@ -5,8 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import se.magnus.api.core.comment.Comment;
 import se.magnus.api.core.comment.CommentService;
+import se.magnus.api.core.rating.Rating;
 import se.magnus.microservices.core.comment.persistence.CommentEntity;
 import se.magnus.microservices.core.comment.persistence.CommentRepository;
 import se.magnus.util.exceptions.InvalidInputException;
@@ -30,35 +33,31 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getComments(int movieId) {
+    public Flux<Comment> getComments(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
 
-        List<CommentEntity> entityList = repository.findByMovieId(movieId);
-        List<Comment> list = mapper.entityListToApiList(entityList);
-        list.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));
-
-        LOG.debug("getComments: response size: {}", list.size());
-
-        return list;
+        return repository.findByMovieId(movieId)
+                .log()
+                .map(mapper::entityToApi)
+                .map(e -> { e.setServiceAddress(serviceUtil.getServiceAddress()); return e; });
     }
 
     @Override
     public Comment createComment(Comment body) {
-        try {
-            CommentEntity entity = mapper.apiToEntity(body);
-            CommentEntity newEntity = repository.save(entity);
+        CommentEntity entity = mapper.apiToEntity(body);
+        Mono<Comment> newEntity = repository.save(entity)
+                .log()
+                .onErrorMap(
+                        DuplicateKeyException.class,
+                        ex -> new InvalidInputException("Duplicate key, Movie Id: " + body.getMovieId() + ", Comment Id:" + body.getCommentId()))
+                .map(e -> mapper.entityToApi(e));
 
-            LOG.debug("createComment: created a comment entity: {}/{}", body.getMovieId(), body.getCommentId());
-            return mapper.entityToApi(newEntity);
-
-        } catch (DuplicateKeyException dke) {
-            throw new InvalidInputException("Duplicate key, Rating Id: " + body.getMovieId() + ", Comment Id:" + body.getCommentId());
-        }
+        return newEntity.block();
     }
 
     @Override
     public void deleteComments(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
-        repository.deleteAll(repository.findByMovieId(movieId));
+        repository.deleteAll(repository.findByMovieId(movieId)).block();
     }
 }
