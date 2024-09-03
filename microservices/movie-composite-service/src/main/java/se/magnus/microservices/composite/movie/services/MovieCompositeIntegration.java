@@ -93,14 +93,14 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
         this.webClient = webClient.build();
         this.messageSources = messageSources;
 
-        this.movieServiceUrl = "http://" + movieServiceHost + ":" + movieServicePort + "/movie";
-        this.screeningServiceUrl = "http://" + screeningServiceHost + ":" + screeningServicePort + "/screening";
-        this.commentServiceUrl = "http://" + commentServiceHost + ":" + commentServicePort + "/comment";
-        this.ratingServiceUrl = "http://" + ratingServiceHost + ":" + ratingServicePort + "/rating";
+        this.movieServiceUrl = "http://" + movieServiceHost + ":" + movieServicePort;
+        this.screeningServiceUrl = "http://" + screeningServiceHost + ":" + screeningServicePort;
+        this.commentServiceUrl = "http://" + commentServiceHost + ":" + commentServicePort;
+        this.ratingServiceUrl = "http://" + ratingServiceHost + ":" + ratingServicePort;
     }
 
     public Mono<Movie> getMovie(int movieId) {
-        String url = movieServiceUrl + "/" + movieId;
+        String url = movieServiceUrl + "/movie/" + movieId;
         LOG.debug("Will call the getMovie API on URL: {}", url);
 
         return webClient.get().uri(url).retrieve().bodyToMono(Movie.class).log()
@@ -119,7 +119,7 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     }
 
     public Flux<Comment> getComments(int movieId) {
-        String url = commentServiceUrl + "?movieId=" + movieId;
+        String url = commentServiceUrl + "/comment?movieId=" + movieId;
         LOG.debug("Will call getComments API on URL: {}", url);
 
         // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
@@ -138,7 +138,7 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     }
 
     public Flux<Rating> getRatings(int movieId) {
-        String url = ratingServiceUrl + "?movieId=" + movieId;;
+        String url = ratingServiceUrl + "/rating?movieId=" + movieId;;
         LOG.debug("Will call getRatings API on URL: {}", url);
 
         // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
@@ -157,7 +157,7 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     }
 
     public Flux<Screening> getScreenings(int movieId) {
-        String url = screeningServiceUrl + "?movieId=" + movieId;
+        String url = screeningServiceUrl + "/screening?movieId=" + movieId;
         LOG.debug("Will call getScreenings API on URL: {}", url);
 
         // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses

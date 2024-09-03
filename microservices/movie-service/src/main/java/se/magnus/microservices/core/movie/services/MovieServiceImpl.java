@@ -37,7 +37,7 @@ public class MovieServiceImpl implements MovieService {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
 
         return repository.findByMovieId(movieId)
-                .switchIfEmpty(error(new NotFoundException("No product found for movieId: " + movieId)))
+                .switchIfEmpty(error(new NotFoundException("No movie found for movieId: " + movieId)))
                 .log()
                 .map(e -> mapper.entityToApi(e))
                 .map(e -> {e.setServiceAddress(serviceUtil.getServiceAddress()); return e;});
