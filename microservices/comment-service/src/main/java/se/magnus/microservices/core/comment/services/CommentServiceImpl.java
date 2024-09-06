@@ -9,13 +9,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import se.magnus.api.core.comment.Comment;
 import se.magnus.api.core.comment.CommentService;
-import se.magnus.api.core.rating.Rating;
 import se.magnus.microservices.core.comment.persistence.CommentEntity;
 import se.magnus.microservices.core.comment.persistence.CommentRepository;
 import se.magnus.util.exceptions.InvalidInputException;
 import se.magnus.util.http.ServiceUtil;
-
-import java.util.List;
 
 
 @RestController

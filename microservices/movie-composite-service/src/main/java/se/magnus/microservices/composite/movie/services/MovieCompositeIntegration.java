@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
@@ -39,14 +38,15 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
 
     private static final Logger LOG = LoggerFactory.getLogger(MovieCompositeIntegration.class);
 
-    private final String movieServiceUrl;
-    private final String commentServiceUrl;
-    private final String ratingServiceUrl;
-    private final String screeningServiceUrl;
+    private final String movieServiceUrl = "http://movie";
+    private final String commentServiceUrl = "http://comment";
+    private final String ratingServiceUrl  = "http://rating";
+    private final String screeningServiceUrl = "http://screening";
 
     private final ObjectMapper mapper;
 
-    private final WebClient webClient;
+    private WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     private MessageSources messageSources;
 
@@ -73,37 +73,21 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     @Autowired
     public MovieCompositeIntegration(
             ObjectMapper mapper,
-            WebClient.Builder webClient,
             MessageSources messageSources,
-
-            @Value("${app.movie-service.host}") String movieServiceHost,
-            @Value("${app.movie-service.port}") int movieServicePort,
-
-            @Value("${app.comment-service.host}") String commentServiceHost,
-            @Value("${app.comment-service.port}") int commentServicePort,
-
-            @Value("${app.rating-service.host}") String ratingServiceHost,
-            @Value("${app.rating-service.port}") int ratingServicePort,
-
-            @Value("${app.screening-service.host}") String screeningServiceHost,
-            @Value("${app.screening-service.port}") int screeningServicePort
+            WebClient.Builder webClientBuilder
     ) {
 
         this.mapper = mapper;
-        this.webClient = webClient.build();
         this.messageSources = messageSources;
-
-        this.movieServiceUrl = "http://" + movieServiceHost + ":" + movieServicePort;
-        this.screeningServiceUrl = "http://" + screeningServiceHost + ":" + screeningServicePort;
-        this.commentServiceUrl = "http://" + commentServiceHost + ":" + commentServicePort;
-        this.ratingServiceUrl = "http://" + ratingServiceHost + ":" + ratingServicePort;
+        this.webClientBuilder = webClientBuilder;
     }
 
+    @Override
     public Mono<Movie> getMovie(int movieId) {
         String url = movieServiceUrl + "/movie/" + movieId;
         LOG.debug("Will call the getMovie API on URL: {}", url);
 
-        return webClient.get().uri(url).retrieve().bodyToMono(Movie.class).log()
+        return getWebClient().get().uri(url).retrieve().bodyToMono(Movie.class).log()
                 .onErrorMap(WebClientResponseException.class, ex -> handleException(ex));
     }
 
@@ -118,12 +102,13 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
         messageSources.outputMovies().send(MessageBuilder.withPayload(new Event(DELETE, movieId, null)).build());
     }
 
+    @Override
     public Flux<Comment> getComments(int movieId) {
         String url = commentServiceUrl + "/comment?movieId=" + movieId;
         LOG.debug("Will call getComments API on URL: {}", url);
 
         // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
-        return webClient.get().uri(url).retrieve().bodyToFlux(Comment.class).log().onErrorResume(error -> empty());
+        return getWebClient().get().uri(url).retrieve().bodyToFlux(Comment.class).log().onErrorResume(error -> empty());
     }
 
     @Override
@@ -137,12 +122,13 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
         messageSources.outputComments().send(MessageBuilder.withPayload(new Event(DELETE, movieId, null)).build());
     }
 
+    @Override
     public Flux<Rating> getRatings(int movieId) {
         String url = ratingServiceUrl + "/rating?movieId=" + movieId;;
         LOG.debug("Will call getRatings API on URL: {}", url);
 
         // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
-        return webClient.get().uri(url).retrieve().bodyToFlux(Rating.class).log().onErrorResume(error -> empty());
+        return getWebClient().get().uri(url).retrieve().bodyToFlux(Rating.class).log().onErrorResume(error -> empty());
     }
 
     @Override
@@ -156,12 +142,13 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
         messageSources.outputRatings().send(MessageBuilder.withPayload(new Event(DELETE, movieId, null)).build());
     }
 
+    @Override
     public Flux<Screening> getScreenings(int movieId) {
         String url = screeningServiceUrl + "/screening?movieId=" + movieId;
         LOG.debug("Will call getScreenings API on URL: {}", url);
 
         // Return an empty result if something goes wrong to make it possible for the composite service to return partial responses
-        return webClient.get().uri(url).retrieve().bodyToFlux(Screening.class).log().onErrorResume(error -> empty());
+        return getWebClient().get().uri(url).retrieve().bodyToFlux(Screening.class).log().onErrorResume(error -> empty());
     }
 
     @Override
@@ -178,7 +165,7 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     private Mono<Health> getHealth(String url) {
         url += "/actuator/health";
         LOG.debug("Will call the Health API on URL: {}", url);
-        return webClient.get().uri(url).retrieve().bodyToMono(String.class)
+        return getWebClient().get().uri(url).retrieve().bodyToMono(String.class)
                 .map(s -> new Health.Builder().up().build())
                 .onErrorResume(ex -> Mono.just(new Health.Builder().down(ex).build()))
                 .log();
@@ -198,6 +185,13 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
 
     public Mono<Health> getScreeningHealth() {
         return getHealth(screeningServiceUrl);
+    }
+
+    private WebClient getWebClient() {
+        if (webClient == null) {
+            webClient = webClientBuilder.build();
+        }
+        return webClient;
     }
 
     private Throwable handleException(Throwable ex) {
