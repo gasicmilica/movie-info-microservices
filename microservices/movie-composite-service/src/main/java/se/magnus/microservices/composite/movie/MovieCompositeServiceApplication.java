@@ -15,8 +15,6 @@ import springfox.documentation.service.Contact;
 import springfox.documentation.spring.web.plugins.Docket;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 
-import java.util.LinkedHashMap;
-
 import static java.util.Collections.emptyList;
 import static org.springframework.web.bind.annotation.RequestMethod.*;
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
@@ -68,19 +66,6 @@ public class MovieCompositeServiceApplication {
 
 	@Autowired
 	MovieCompositeIntegration integration;
-
-	@Bean
-	ReactiveHealthIndicator coreServices() {
-
-		ReactiveHealthIndicatorRegistry registry = new DefaultReactiveHealthIndicatorRegistry(new LinkedHashMap<>());
-
-		registry.register("movie", () -> integration.getMovieHealth());
-		registry.register("comment", () -> integration.getCommentHealth());
-		registry.register("rating", () -> integration.getRatingHealth());
-		registry.register("screening", () -> integration.getScreeningHealth());
-
-		return new CompositeReactiveHealthIndicator(healthAggregator, registry);
-	}
 
 	@Bean
 	@LoadBalanced

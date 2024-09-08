@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Health;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.messaging.MessageChannel;
@@ -160,31 +159,6 @@ public class MovieCompositeIntegration implements MovieService, CommentService, 
     @Override
     public void deleteScreenings(int movieId) {
         messageSources.outputScreenings().send(MessageBuilder.withPayload(new Event(DELETE, movieId, null)).build());
-    }
-
-    private Mono<Health> getHealth(String url) {
-        url += "/actuator/health";
-        LOG.debug("Will call the Health API on URL: {}", url);
-        return getWebClient().get().uri(url).retrieve().bodyToMono(String.class)
-                .map(s -> new Health.Builder().up().build())
-                .onErrorResume(ex -> Mono.just(new Health.Builder().down(ex).build()))
-                .log();
-    }
-
-    public Mono<Health> getMovieHealth() {
-        return getHealth(movieServiceUrl);
-    }
-
-    public Mono<Health> getCommentHealth() {
-        return getHealth(commentServiceUrl);
-    }
-
-    public Mono<Health> getRatingHealth() {
-        return getHealth(ratingServiceUrl);
-    }
-
-    public Mono<Health> getScreeningHealth() {
-        return getHealth(screeningServiceUrl);
     }
 
     private WebClient getWebClient() {
