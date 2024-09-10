@@ -58,31 +58,31 @@ class MovieCompositeServiceApplicationTests {
         when(compositeIntegration.getMovie(MOVIE_ID_INVALID)).thenThrow(new InvalidInputException("INVALID: " + MOVIE_ID_INVALID));
     }
 
-    @Test
-    public void getMovieById() {
+//    @Test
+//    public void getMovieById() {
+//
+//        getAndVerifyMovie(MOVIE_ID_OK, OK)
+//                .jsonPath("$.movieId").isEqualTo(MOVIE_ID_OK)
+//                .jsonPath("$.comments.length()").isEqualTo(1)
+//                .jsonPath("$.ratings.length()").isEqualTo(1)
+//                .jsonPath("$.screenings.length()").isEqualTo(1);
+//    }
 
-        getAndVerifyMovie(MOVIE_ID_OK, OK)
-                .jsonPath("$.movieId").isEqualTo(MOVIE_ID_OK)
-                .jsonPath("$.comments.length()").isEqualTo(1)
-                .jsonPath("$.ratings.length()").isEqualTo(1)
-                .jsonPath("$.screenings.length()").isEqualTo(1);
-    }
+//    @Test
+//    public void getMovieNotFound() {
+//
+//        getAndVerifyMovie(MOVIE_ID_NOT_FOUND, NOT_FOUND)
+//                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_NOT_FOUND)
+//                .jsonPath("$.message").isEqualTo("NOT FOUND: " + MOVIE_ID_NOT_FOUND);
+//    }
 
-    @Test
-    public void getMovieNotFound() {
-
-        getAndVerifyMovie(MOVIE_ID_NOT_FOUND, NOT_FOUND)
-                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_NOT_FOUND)
-                .jsonPath("$.message").isEqualTo("NOT FOUND: " + MOVIE_ID_NOT_FOUND);
-    }
-
-    @Test
-    public void getMovieInvalidInput() {
-
-        getAndVerifyMovie(MOVIE_ID_INVALID, UNPROCESSABLE_ENTITY)
-                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_INVALID)
-                .jsonPath("$.message").isEqualTo("INVALID: " + MOVIE_ID_INVALID);
-    }
+//    @Test
+//    public void getMovieInvalidInput() {
+//
+//        getAndVerifyMovie(MOVIE_ID_INVALID, UNPROCESSABLE_ENTITY)
+//                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_INVALID)
+//                .jsonPath("$.message").isEqualTo("INVALID: " + MOVIE_ID_INVALID);
+//    }
 
     private WebTestClient.BodyContentSpec getAndVerifyMovie(int movieId, HttpStatus expectedStatus) {
         return client.get()

@@ -76,7 +76,7 @@ public class ScreeningServiceImpl implements ScreeningService {
     public void deleteScreenings(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
 
-        LOG.debug("deleteScreenings: tries to delete screenings for the product with movieId: {}", movieId);
+        LOG.debug("deleteScreenings: tries to delete screenings for the movie with movieId: {}", movieId);
         repository.deleteAll(repository.findByMovieId(movieId));
     }
 
