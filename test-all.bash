@@ -5,7 +5,7 @@
 #   HOST=localhost PORT=7000 ./test-all.bash
 #
 : ${HOST=localhost}
-: ${PORT=8080}
+: ${PORT=8443}
 : ${MOVIE_ID_NORMAL=1}
 : ${MOVIE_ID_NOT_FOUND=13}
 : ${MOVIE_ID_NO_COMM=113}

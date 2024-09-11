@@ -1,4 +1,3 @@
-
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.3.2.RELEASE'
@@ -9,21 +8,25 @@ group = 'se.magnus.springcloud'
 version = '1.0.0-SNAPSHOT'
 sourceCompatibility = '1.8'
 
-repositories {
-	mavenCentral()
-}
-
 ext {
 	springCloudVersion = "Hoxton.SR6"
 }
 
+repositories {
+	mavenCentral()
+}
+
 dependencies {
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
-	implementation 'org.glassfish.jaxb:jaxb-runtime'
+	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework.cloud:spring-cloud-config-server'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
 }
 
 dependencyManagement {
