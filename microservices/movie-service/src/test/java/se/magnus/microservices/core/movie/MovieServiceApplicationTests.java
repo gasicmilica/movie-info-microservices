@@ -27,7 +27,7 @@ import static se.magnus.api.event.Event.Type.DELETE;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment=RANDOM_PORT, properties = {"spring.data.mongodb.port: 0", "eureka.client.enabled=false"})
+@SpringBootTest(webEnvironment=RANDOM_PORT, properties = {"spring.data.mongodb.port: 0", "eureka.client.enabled=false", "spring.cloud.config.enabled=false", "server.error.include-message=always"})
 class MovieServiceApplicationTests {
 
     @Autowired
@@ -71,15 +71,15 @@ class MovieServiceApplicationTests {
                 .jsonPath("$.message").isEqualTo("Type mismatch.");
     }
 
-//    @Test
-//    public void getMovieNotFound() {
-//
-//        int movieIdNotFound = 13;
-//
-//        getAndVerifyMovie(movieIdNotFound, NOT_FOUND)
-//                .jsonPath("$.path").isEqualTo("/movie/" + movieIdNotFound)
-//                .jsonPath("$.message").isEqualTo("No product found for movieId: " + movieIdNotFound);
-//    }
+    @Test
+    public void getMovieNotFound() {
+
+        int movieIdNotFound = 13;
+
+        getAndVerifyMovie(movieIdNotFound, NOT_FOUND)
+                .jsonPath("$.path").isEqualTo("/movie/" + movieIdNotFound)
+                .jsonPath("$.message").isEqualTo("No movie found for movieId: " + movieIdNotFound);
+    }
 
     @Test
     public void getMovieInvalidParameterNegativeValue() {
@@ -92,7 +92,7 @@ class MovieServiceApplicationTests {
     }
 
     @Test
-    public void deleteProduct() {
+    public void deleteMovie() {
 
         int movieId = 1;
 
@@ -145,8 +145,8 @@ class MovieServiceApplicationTests {
     }
 
     private void sendCreateMovieEvent(int movieId) {
-        Movie product = new Movie(movieId,"title", "Director", 2010, 2, "Genre", "mock-address");
-        Event<Integer, Movie> event = new Event(CREATE, movieId, product);
+        Movie movie = new Movie(movieId,"title", "Director", 2010, 2, "Genre", "mock-address");
+        Event<Integer, Movie> event = new Event(CREATE, movieId, movie);
         input.send(new GenericMessage<>(event));
     }
 

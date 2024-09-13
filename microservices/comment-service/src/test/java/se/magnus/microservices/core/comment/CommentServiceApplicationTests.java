@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.messaging.Sink;
 import org.springframework.integration.channel.AbstractMessageChannel;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -15,10 +16,13 @@ import org.springframework.http.HttpStatus;
 import se.magnus.api.core.movie.Movie;
 import se.magnus.api.event.Event;
 import se.magnus.microservices.core.comment.persistence.CommentRepository;
+import se.magnus.util.exceptions.InvalidInputException;
+
 import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 
+import static org.junit.Assert.fail;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -26,7 +30,7 @@ import static se.magnus.api.event.Event.Type.CREATE;
 import static se.magnus.api.event.Event.Type.DELETE;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment=RANDOM_PORT, properties = {"spring.data.mongodb.port: 0", "eureka.client.enabled=false"})
+@SpringBootTest(webEnvironment=RANDOM_PORT, properties = {"spring.data.mongodb.port: 0", "eureka.client.enabled=false", "spring.cloud.config.enabled=false", "server.error.include-message=always"})
 class CommentServiceApplicationTests {
 
     @Autowired
@@ -59,7 +63,8 @@ class CommentServiceApplicationTests {
 
         getAndVerifyCommentsByMovieId(movieId, OK)
                 .jsonPath("$.length()").isEqualTo(3)
-                .jsonPath("$[2].movieId").isEqualTo(movieId);
+                .jsonPath("$[2].movieId").isEqualTo(movieId)
+                .jsonPath("$[2].commentId").isEqualTo(3);
     }
 
     @Test
@@ -73,14 +78,8 @@ class CommentServiceApplicationTests {
     @Test
     public void getCommentsInvalidParameter() {
 
-        client.get()
-                .uri("/comment?movieId=no-integer")
-                .accept(APPLICATION_JSON)
-                .exchange()
-                .expectStatus().isEqualTo(BAD_REQUEST)
-                .expectHeader().contentType(APPLICATION_JSON)
-                .expectBody()
-                .jsonPath("$.path").isEqualTo("/comment")
+        getAndVerifyCommentsByMovieId("?productId=no-integer", BAD_REQUEST)
+                .jsonPath("$.path").isEqualTo("/recommendation")
                 .jsonPath("$.message").isEqualTo("Type mismatch.");
     }
 
@@ -102,6 +101,22 @@ class CommentServiceApplicationTests {
                 .jsonPath("$.message").isEqualTo("Invalid movieId: " + movieIdInvalid);
     }
 
+    @Test
+    public void deleteRecommendations() {
+
+        int movieId = 1;
+        int commentId = 1;
+
+        sendCreateCommentEvent(movieId, commentId);
+        assertEquals(1, (long)repository.findByMovieId(movieId).count().block());
+
+        sendDeleteCommentEvent(movieId);
+        assertEquals(0, (long)repository.findByMovieId(movieId).count().block());
+
+        sendDeleteCommentEvent(movieId);
+    }
+
+
     private WebTestClient.BodyContentSpec getAndVerifyCommentsByMovieId(int movieId, HttpStatus expectedStatus) {
         return getAndVerifyCommentsByMovieId("?movieId=" + movieId, expectedStatus);
     }
@@ -116,13 +131,38 @@ class CommentServiceApplicationTests {
                 .expectBody();
     }
 
+    @Test
+    public void duplicateError() {
+
+        int movieId = 1;
+        int commentId = 1;
+
+        sendCreateCommentEvent(movieId, commentId);
+
+        assertEquals(1, (long)repository.count().block());
+
+        try {
+            sendCreateCommentEvent(movieId, commentId);
+            fail("Expected a MessagingException here!");
+        } catch (MessagingException me) {
+            if (me.getCause() instanceof InvalidInputException)	{
+                InvalidInputException iie = (InvalidInputException)me.getCause();
+                assertEquals("Duplicate key, Movie Id: 1, Comment Id:1", iie.getMessage());
+            } else {
+                fail("Expected a InvalidInputException as the root cause!");
+            }
+        }
+
+        assertEquals(1, (long)repository.count().block());
+    }
+
     private void sendCreateCommentEvent(int movieId, int commentId) {
         Comment comment = new Comment(movieId, commentId,"author", new Date(), "content", "mock address");
         Event<Integer, Movie> event = new Event(CREATE, movieId, comment);
         input.send(new GenericMessage<>(event));
     }
 
-    private void sendDeleteRecommendationEvent(int movieId) {
+    private void sendDeleteCommentEvent(int movieId) {
         Event<Integer, Movie> event = new Event(DELETE, movieId, null);
         input.send(new GenericMessage<>(event));
     }
