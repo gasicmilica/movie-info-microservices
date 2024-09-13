@@ -11,11 +11,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import se.magnus.api.composite.movie.CommentSummary;
 import se.magnus.api.composite.movie.MovieAggregate;
-import se.magnus.api.composite.movie.RatingSummary;
-import se.magnus.api.composite.movie.ScreeningSummary;
-import se.magnus.api.core.comment.Comment;
 import se.magnus.api.core.movie.Movie;
 import se.magnus.api.event.Event;
 import se.magnus.microservices.composite.movie.services.MovieCompositeIntegration;
@@ -23,10 +19,8 @@ import se.magnus.microservices.composite.movie.services.MovieCompositeIntegratio
 import static org.hamcrest.Matchers.is;
 import static se.magnus.microservices.composite.movie.IsSameEvent.sameEventExceptCreatedAt;
 
-import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
-import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
