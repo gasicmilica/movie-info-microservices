@@ -28,7 +28,10 @@ import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment=RANDOM_PORT, properties = {"eureka.client.enabled=false"})
+@SpringBootTest(
+        webEnvironment=RANDOM_PORT,
+        classes = {MovieCompositeServiceApplication.class, TestSecurityConfig.class },
+        properties = {"spring.main.allow-bean-definition-overriding=true","eureka.client.enabled=false","spring.cloud.config.enabled=false"})
 class MovieCompositeServiceApplicationTests {
 
     private static final int MOVIE_ID_OK = 1;
@@ -58,31 +61,34 @@ class MovieCompositeServiceApplicationTests {
         when(compositeIntegration.getMovie(MOVIE_ID_INVALID)).thenThrow(new InvalidInputException("INVALID: " + MOVIE_ID_INVALID));
     }
 
-//    @Test
-//    public void getMovieById() {
-//
-//        getAndVerifyMovie(MOVIE_ID_OK, OK)
-//                .jsonPath("$.movieId").isEqualTo(MOVIE_ID_OK)
-//                .jsonPath("$.comments.length()").isEqualTo(1)
-//                .jsonPath("$.ratings.length()").isEqualTo(1)
-//                .jsonPath("$.screenings.length()").isEqualTo(1);
-//    }
+    @Test
+    public void contextLoads() { }
 
-//    @Test
-//    public void getMovieNotFound() {
-//
-//        getAndVerifyMovie(MOVIE_ID_NOT_FOUND, NOT_FOUND)
-//                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_NOT_FOUND)
-//                .jsonPath("$.message").isEqualTo("NOT FOUND: " + MOVIE_ID_NOT_FOUND);
-//    }
+    @Test
+    public void getMovieById() {
 
-//    @Test
-//    public void getMovieInvalidInput() {
-//
-//        getAndVerifyMovie(MOVIE_ID_INVALID, UNPROCESSABLE_ENTITY)
-//                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_INVALID)
-//                .jsonPath("$.message").isEqualTo("INVALID: " + MOVIE_ID_INVALID);
-//    }
+        getAndVerifyMovie(MOVIE_ID_OK, OK)
+                .jsonPath("$.movieId").isEqualTo(MOVIE_ID_OK)
+                .jsonPath("$.comments.length()").isEqualTo(1)
+                .jsonPath("$.ratings.length()").isEqualTo(1)
+                .jsonPath("$.screenings.length()").isEqualTo(1);
+    }
+
+    @Test
+    public void getMovieNotFound() {
+
+        getAndVerifyMovie(MOVIE_ID_NOT_FOUND, NOT_FOUND)
+                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_NOT_FOUND)
+                .jsonPath("$.message").isEqualTo("NOT FOUND: " + MOVIE_ID_NOT_FOUND);
+    }
+
+    @Test
+    public void getMovieInvalidInput() {
+
+        getAndVerifyMovie(MOVIE_ID_INVALID, UNPROCESSABLE_ENTITY)
+                .jsonPath("$.path").isEqualTo("/movie-composite/" + MOVIE_ID_INVALID)
+                .jsonPath("$.message").isEqualTo("INVALID: " + MOVIE_ID_INVALID);
+    }
 
     private WebTestClient.BodyContentSpec getAndVerifyMovie(int movieId, HttpStatus expectedStatus) {
         return client.get()
