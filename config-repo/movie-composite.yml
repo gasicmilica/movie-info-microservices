@@ -35,7 +35,7 @@ api:
       description: Creates a composite movie
       notes: |
         # Normal response
-        The composite movie information posted to the API will be splitted up and stored as separate movie-info, recommendation and review entities.
+        The composite movie information posted to the API will be splitted up and stored as separate movie-info, comments, ratings and screenings entities.
 
         # Expected error responses
         1. If a movie with the same movieId as specified in the posted information already exists,
@@ -45,7 +45,7 @@ api:
       description: Deletes a movie composite
       notes: |
         # Normal response
-        Entities for movie information, recommendations and reviews related to the specificed movieId will be deleted.
+        Entities for movie information, comments, ratings and screenings related to the specificed movieId will be deleted.
         The implementation of the delete method is idempotent, i.e. it can be called several times with the same response.
         This means that a delete request of a non existing movie will return <b>200 Ok</b>.
 
@@ -94,15 +94,19 @@ server.port: 8080
 ---
 spring.profiles: streaming_partitioned
 
-spring.cloud.stream.bindings.output-products.producer:
+spring.cloud.stream.bindings.output-movies.producer:
   partition-key-expression: payload.key
   partition-count: 2
 
-spring.cloud.stream.bindings.output-recommendations.producer:
+spring.cloud.stream.bindings.output-comments.producer:
   partition-key-expression: payload.key
   partition-count: 2
 
-spring.cloud.stream.bindings.output-reviews.producer:
+spring.cloud.stream.bindings.output-ratings.producer:
+  partition-key-expression: payload.key
+  partition-count: 2
+
+spring.cloud.stream.bindings.output-screenings.producer:
   partition-key-expression: payload.key
   partition-count: 2
 

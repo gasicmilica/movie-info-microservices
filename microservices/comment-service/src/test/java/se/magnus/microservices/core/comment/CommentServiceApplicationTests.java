@@ -78,8 +78,8 @@ class CommentServiceApplicationTests {
     @Test
     public void getCommentsInvalidParameter() {
 
-        getAndVerifyCommentsByMovieId("?productId=no-integer", BAD_REQUEST)
-                .jsonPath("$.path").isEqualTo("/recommendation")
+        getAndVerifyCommentsByMovieId("?movieId=no-integer", BAD_REQUEST)
+                .jsonPath("$.path").isEqualTo("/comment")
                 .jsonPath("$.message").isEqualTo("Type mismatch.");
     }
 
@@ -102,7 +102,7 @@ class CommentServiceApplicationTests {
     }
 
     @Test
-    public void deleteRecommendations() {
+    public void deleteComments() {
 
         int movieId = 1;
         int commentId = 1;

@@ -41,7 +41,7 @@ public class ScreeningServiceImpl implements ScreeningService {
     public Flux<Screening> getScreenings(int movieId) {
         if (movieId < 1) throw new InvalidInputException("Invalid movieId: " + movieId);
 
-        LOG.debug("Will get reviews for product with id={}", movieId);
+        LOG.debug("Will get screenings for movie with id={}", movieId);
 
         return asyncFlux(() -> Flux.fromIterable(getByMovieId(movieId))).log(null, FINE);
     }
